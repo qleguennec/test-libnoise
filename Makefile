@@ -1,4 +1,4 @@
-PROJECT		=	test-linoise
+PROJECT		=	test-libnoise
 BINDIR		?=	.
 BUILDDIR	?=	build
 NAME		=	$(BINDIR)/test-libnoise
@@ -24,15 +24,18 @@ SRCEX		=
 SRC			=	$(filter-out $(SRCEX), $(filter %.c, $(shell ls)))
 OBJECTS		=	$(addprefix $(BUILDDIR)/, $(SRC:%.c=%.o))
 
-LIBLINK		=	-lnoise -lft
-LIBS		=	$(addprefix $(BUILDDIR)/, $(addsuffix .a, $(subst -l, lib, $(LIBLINK))))
+LIBLINK		=	 -lnoise -lcl -lft
+LIBDIRS		:=	$(patsubst -l%, lib%, $(LIBLINK))
+LIBS		:=	$(patsubst -l%, lib%.a, $(LIBDIRS))
+LDFLAGS		:=	$(addprefix -L, $(LIBS))
+LIBLINK		+=	 -lOpenCL
+LDFLAGS		+=	$(LIBLINK)
 
 all: $(NAME)
 
-$(BUILDDIR)/%.a: %
+lib%.a: %
 	$(PRPROJ)
-	BINDIR=$(CURDIR)/$(BUILDDIR) BUILDDIR=$(CURDIR)/$(BUILDDIR) \
-		make --no-print-directory -C $<
+	make --no-print-directory -C $<
 
 $(BUILDDIR)/%.o: %.c
 	@[ -d $(BUILDDIR) ] || mkdir $(BUILDDIR)
@@ -41,7 +44,7 @@ $(BUILDDIR)/%.o: %.c
 
 $(NAME): $(OBJECTS) $(LIBS)
 	$(PRPROJ)
-	$(CC) $(CFLAGS) -L$(BUILDDIR) $(LIBLINK) $(OBJECTS) $(LIBLINK) -o $(NAME)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) $(LIBLINK) -o $(NAME)
 	@printf "OK\t"$(NAME)'\n'
 
 .PHONY: clean sclean fclean re r ex
@@ -50,17 +53,11 @@ clean:
 	$(PRRM)
 	rm -rf $(BUILDDIR)
 
-sclean:
-	$(PRRM)
-	rm -rf $(OBJECTS)
-
 fclean: clean
 	$(PRRM)
 	rm -rf $(NAME)
 
-r: sclean all
-
-ex: r
+ex: re
 	$(NAME)
 
 re: fclean all
