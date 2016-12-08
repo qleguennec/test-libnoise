@@ -24,12 +24,11 @@ SRCEX		=
 SRC			=	$(filter-out $(SRCEX), $(filter %.c, $(shell ls)))
 OBJECTS		=	$(addprefix $(BUILDDIR)/, $(SRC:%.c=%.o))
 
-LIBLINK		=	 -lnoise -lcl -lft
+LIBLINK		=	 -lnoise -lcl -lgnl -lvect -lft
 LIBDIRS		:=	$(patsubst -l%, lib%, $(LIBLINK))
 LIBS		:=	$(patsubst -l%, lib%.a, $(LIBDIRS))
 LDFLAGS		:=	$(addprefix -L, $(LIBS))
-LIBLINK		+=	 -lOpenCL
-LDFLAGS		+=	$(LIBLINK)
+FRAMEWORKS	=	-framework OpenCL
 
 all: $(NAME)
 
@@ -44,7 +43,7 @@ $(BUILDDIR)/%.o: %.c
 
 $(NAME): $(OBJECTS) $(LIBS)
 	$(PRPROJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) $(LIBLINK) -o $(NAME)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(FRAMEWORKS) $(OBJECTS) $(LIBLINK) -o $(NAME)
 	@printf "OK\t"$(NAME)'\n'
 
 .PHONY: clean sclean fclean re r ex

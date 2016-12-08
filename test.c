@@ -6,7 +6,7 @@
 /*   By: qle-guen <qle-guen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/01 02:18:32 by qle-guen          #+#    #+#             */
-/*   Updated: 2016/12/03 03:25:30 by qle-guen         ###   ########.fr       */
+/*   Updated: 2016/12/08 15:16:17 by qle-guen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,18 @@
 #include <unistd.h>
 #include <time.h>
 
-#define NSEEDS 2
 #define K 1706653698
 #define X 800
 #define Y 600
 #define LEN X * Y
 #define SIZE LEN * sizeof(cl_float2)
 
-int		get_parameters(t_noise *n)
+void	get_parameters(t_noise *n)
 {
 	n->grads = NULL;
-	n->ngrads = 4096;
-	n->seed = 312098;
-	return (noise_init_k(n, NSEEDS, K));
+	n->ngrads = 28;
+	n->seed = 31209823423;
+	noise_init(n);
 }
 
 void	bmp(t_noise *n, t_cl_info *cl)
@@ -54,6 +53,8 @@ void	bmp(t_noise *n, t_cl_info *cl)
 	(void)out;
 	(void)work_size;
 	krl = noise_krl_build(cl, n, arr, LEN);
+	if (krl)
+		printf("krl ok\n");
 }
 
 int		main(void)
@@ -61,11 +62,7 @@ int		main(void)
 	t_noise		n;
 	t_cl_info	cl;
 
-	if (!get_parameters(&n))
-	{
-		printf("err: k invalid\n");
-		return (1);
-	}
+	get_parameters(&n);
 	cl_init(&cl);
 	bmp(&n, &cl);
 	return (0);
