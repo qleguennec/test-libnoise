@@ -24,15 +24,15 @@ SRCEX		=
 SRC			=	$(filter-out $(SRCEX), $(filter %.c, $(shell ls)))
 OBJECTS		=	$(addprefix $(BUILDDIR)/, $(SRC:%.c=%.o))
 
-LIBLINK		=	 -lnoise -lcl -lgnl -lvect -lft
+LIBLINK		=	 -lnoise -lcl -lgnl -lvect -lft -lmlx
 LIBDIRS		:=	$(patsubst -l%, lib%, $(LIBLINK))
-LIBS		:=	$(patsubst -l%, lib%.a, $(LIBDIRS))
-LDFLAGS		:=	$(addprefix -L, $(LIBS))
-FRAMEWORKS	=	-framework OpenCL
+LIBS		:=	$(addsuffix .a, $(LIBDIRS))
+LDFLAGS		:=	$(addprefix -L, $(LIBDIRS))
+FRAMEWORKS	=	-framework OpenCL -framework OpenGL -framework AppKit
 
 all: $(NAME)
 
-lib%.a: %
+%.a: %
 	$(PRPROJ)
 	make --no-print-directory -C $<
 

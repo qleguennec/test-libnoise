@@ -6,11 +6,12 @@
 /*   By: qle-guen <qle-guen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/01 02:18:32 by qle-guen          #+#    #+#             */
-/*   Updated: 2016/12/08 15:16:17 by qle-guen         ###   ########.fr       */
+/*   Updated: 2016/12/14 14:23:54 by qle-guen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libnoise/libnoise.h"
+#include "libmlx/mlx.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -38,6 +39,7 @@ void	bmp(t_noise *n, t_cl_info *cl)
 	cl_float2	arr[LEN];
 	cl_kernel	krl;
 	cl_float	out[LEN];
+	int			null;
 
 	while (i < Y)
 	{
@@ -55,6 +57,26 @@ void	bmp(t_noise *n, t_cl_info *cl)
 	krl = noise_krl_build(cl, n, arr, LEN);
 	if (krl)
 		printf("krl ok\n");
+	noise_krl_exec(cl, krl, n, work_size);
+	cl_read(cl, out, LEN * sizeof(cl_float));
+	void *mlx = mlx_init();
+	void *win = mlx_new_window(mlx, X, Y, "test-libnoise");
+	void *img = mlx_new_image(mlx, X, Y);
+	int *tex = (void *)mlx_get_data_addr(img, &null, &null, &null);
+	i = 0;
+	while (i < Y)
+	{
+		j = 0;
+		while (j < X)
+		{
+			tex[i * j] = 0xFF * out[i * j];
+			printf("%f\n", out[i * j]);
+			j++;
+		}
+		i++;
+	}
+	mlx_put_image_to_window(mlx, win, img, 0, 0);
+	mlx_loop(mlx);
 }
 
 int		main(void)
