@@ -6,7 +6,7 @@
 /*   By: qle-guen <qle-guen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/01 02:18:32 by qle-guen          #+#    #+#             */
-/*   Updated: 2016/12/14 14:23:54 by qle-guen         ###   ########.fr       */
+/*   Updated: 2016/12/14 16:34:46 by qle-guen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,8 @@
 void	get_parameters(t_noise *n)
 {
 	n->grads = NULL;
-	n->ngrads = 28;
-	n->seed = 31209823423;
+	n->ngrads = 1024;
+	n->seed = 4242;
 	noise_init(n);
 }
 
@@ -37,9 +37,9 @@ void	bmp(t_noise *n, t_cl_info *cl)
 	size_t		i = 0;
 	size_t		j = 0;
 	cl_float2	arr[LEN];
-	cl_kernel	krl;
 	cl_float	out[LEN];
 	int			null;
+	t_cl_krl	*krl;
 
 	while (i < Y)
 	{
@@ -57,8 +57,13 @@ void	bmp(t_noise *n, t_cl_info *cl)
 	krl = noise_krl_build(cl, n, arr, LEN);
 	if (krl)
 		printf("krl ok\n");
-	noise_krl_exec(cl, krl, n, work_size);
-	cl_read(cl, out, LEN * sizeof(cl_float));
+	else
+	{
+		printf("krl nok\n");
+		return ;
+	}
+	noise_krl_exec(cl, krl->krl, n, work_size);
+	cl_read(cl, krl, 0, out);
 	void *mlx = mlx_init();
 	void *win = mlx_new_window(mlx, X, Y, "test-libnoise");
 	void *img = mlx_new_image(mlx, X, Y);
@@ -69,8 +74,8 @@ void	bmp(t_noise *n, t_cl_info *cl)
 		j = 0;
 		while (j < X)
 		{
+			//printf("out: %f\n", out[i * j]);
 			tex[i * j] = 0xFF * out[i * j];
-			printf("%f\n", out[i * j]);
 			j++;
 		}
 		i++;
